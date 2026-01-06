@@ -8,6 +8,7 @@
 		<version>3.2.1</version>
 		<relativePath/>
 	</parent>
+	<packaging>jar</packaging>
 	<groupId>com.example</groupId>
 	<artifactId>personal-finance-manager</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
