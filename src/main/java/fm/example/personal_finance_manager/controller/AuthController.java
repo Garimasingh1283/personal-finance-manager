@@ -27,10 +27,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginDto dto) {
+    public ResponseEntity<Map<String, String>> login(
+            @Valid @RequestBody LoginDto dto
+    ) {
         userService.login(dto);
         return ResponseEntity.ok(Map.of("message", "Login successful"));
     }
+
+
 
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout() {

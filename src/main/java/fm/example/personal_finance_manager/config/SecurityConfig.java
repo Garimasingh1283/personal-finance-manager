@@ -37,14 +37,18 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                // ✅ THIS IS THE KEY FIX
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
-                // ❌ No form login (API only)
+                // ✅ THIS IS THE CRITICAL MISSING PIECE
+                .securityContext(securityContext ->
+                        securityContext.requireExplicitSave(false)
+                )
                 .formLogin(form -> form.disable())
-                .httpBasic(httpBasic -> {});
+                .httpBasic(httpBasic -> {
+                });
 
         return http.build();
     }
 }
+
