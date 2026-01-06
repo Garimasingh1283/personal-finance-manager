@@ -37,9 +37,12 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                // ✅ THIS IS THE KEY FIX
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
+                // ❌ No form login (API only)
+                .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> {});
 
         return http.build();
