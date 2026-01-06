@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,10 +18,10 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // 🔴 THIS IS THE MISSING PIECE
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
+            AuthenticationConfiguration config
+    ) throws Exception {
         return config.getAuthenticationManager();
     }
 
@@ -30,11 +31,16 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api", "/api/**").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/api/auth/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
-                .formLogin(form -> form.disable())
-                .logout(logout -> logout.disable());
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .httpBasic(httpBasic -> {});
 
         return http.build();
     }
