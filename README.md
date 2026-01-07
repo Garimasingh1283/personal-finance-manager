@@ -24,7 +24,7 @@ The application supports user authentication, transaction management, financial 
 - Spring Boot
 - Spring Security (JWT Authentication)
 - Spring Data JPA (Hibernate)
-- MySQL / PostgreSQL (production)
+- H2 Database (production)
 - Maven
 - Deployed on Render
 
