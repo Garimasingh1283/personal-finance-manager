@@ -3,6 +3,7 @@ package fm.example.personal_finance_manager.config;
 import fm.example.personal_finance_manager.exception.ConflictException;
 import fm.example.personal_finance_manager.exception.CustomException;
 import fm.example.personal_finance_manager.exception.ResourceNotFoundException;
+import fm.example.personal_finance_manager.exception.ValidationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice   // ✅ ONLY THIS
+@RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // ✅ Custom validation errors (Goal date, business rules, etc.)
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Map<String, String>> handleValidationCustom(ValidationException ex) {
+        return ResponseEntity
+                .badRequest()
+                .body(Map.of("error", ex.getMessage()));
+    }
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<Map<String, String>> handleCustom(CustomException ex) {
@@ -39,6 +48,7 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
+    // ✅ Bean validation errors (@NotNull, @NotBlank, etc.)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

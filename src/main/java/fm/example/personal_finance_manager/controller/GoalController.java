@@ -18,27 +18,39 @@ import java.util.Map;
 @RequestMapping("/api/goals")
 @RequiredArgsConstructor
 public class GoalController {
+
     private final GoalService goalService;
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<Goal> create(@Valid @RequestBody GoalDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(goalService.create(dto, userService.getCurrentUser()));
+    public ResponseEntity<GoalResponseDto> create(@Valid @RequestBody GoalDto dto) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(goalService.create(dto, userService.getCurrentUser()));
     }
 
     @GetMapping
     public ResponseEntity<Map<String, List<GoalResponseDto>>> getAll() {
-        return ResponseEntity.ok(Map.of("goals", goalService.getAll(userService.getCurrentUser())));
+        return ResponseEntity.ok(
+                Map.of("goals", goalService.getAll(userService.getCurrentUser()))
+        );
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<GoalResponseDto> get(@PathVariable Long id) {
-        return ResponseEntity.ok(goalService.get(id, userService.getCurrentUser()));
+        return ResponseEntity.ok(
+                goalService.get(id, userService.getCurrentUser())
+        );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Goal> update(@PathVariable Long id, @Valid @RequestBody GoalDto dto) {
-        return ResponseEntity.ok(goalService.update(id, dto, userService.getCurrentUser()));
+    public ResponseEntity<GoalResponseDto> update(
+            @PathVariable Long id,
+            @RequestBody GoalDto dto   // ❌ removed @Valid
+    ) {
+        return ResponseEntity.ok(
+                goalService.update(id, dto, userService.getCurrentUser())
+        );
     }
 
     @DeleteMapping("/{id}")
