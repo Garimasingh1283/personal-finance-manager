@@ -2,7 +2,6 @@ package fm.example.personal_finance_manager.controller;
 
 import fm.example.personal_finance_manager.dto.GoalDto;
 import fm.example.personal_finance_manager.dto.GoalResponseDto;
-import fm.example.personal_finance_manager.entity.Goal;
 import fm.example.personal_finance_manager.service.GoalService;
 import fm.example.personal_finance_manager.service.UserService;
 import jakarta.validation.Valid;
@@ -46,7 +45,7 @@ public class GoalController {
     @PutMapping("/{id}")
     public ResponseEntity<GoalResponseDto> update(
             @PathVariable Long id,
-            @RequestBody GoalDto dto   // ❌ removed @Valid
+            @Valid @RequestBody GoalDto dto
     ) {
         return ResponseEntity.ok(
                 goalService.update(id, dto, userService.getCurrentUser())

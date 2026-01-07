@@ -38,4 +38,22 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
           AND t.date >= :startDate
     """)
     BigDecimal sumExpenseSince(User user, LocalDate startDate);
+
+    // ✅ ADD THIS METHOD (THIS FIXES REPORT SERVICE ERROR)
+    @Query("""
+        SELECT c.name, COALESCE(SUM(t.amount), 0)
+        FROM Transaction t
+        JOIN t.category c
+        WHERE t.user = :user
+          AND c.type = :type
+          AND YEAR(t.date) = :year
+          AND MONTH(t.date) = :month
+        GROUP BY c.name
+    """)
+    List<Object[]> sumByCategoryForMonth(
+            User user,
+            String type,
+            int year,
+            int month
+    );
 }

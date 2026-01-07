@@ -25,13 +25,14 @@ public class GoalService {
     private final GoalRepository goalRepository;
     private final TransactionRepository transactionRepository;
 
-    public Goal create(GoalDto dto, User user) {
+    public GoalResponseDto create(GoalDto dto, User user) {
 
         if (dto.getTargetDate().isBefore(LocalDate.now())) {
-            throw new ValidationException("Target date must be future");
+            throw new ValidationException("Target date must be in the future");
         }
 
-        if (dto.getStartDate() != null && dto.getStartDate().isAfter(dto.getTargetDate())) {
+        if (dto.getStartDate() != null &&
+                dto.getStartDate().isAfter(dto.getTargetDate())) {
             throw new ValidationException("Start date cannot be after target date");
         }
 
@@ -39,17 +40,19 @@ public class GoalService {
         goal.setGoalName(dto.getGoalName());
         goal.setTargetAmount(dto.getTargetAmount());
         goal.setTargetDate(dto.getTargetDate());
-        goal.setStartDate(dto.getStartDate() != null ? dto.getStartDate() : LocalDate.now());
+        goal.setStartDate(
+                dto.getStartDate() != null ? dto.getStartDate() : LocalDate.now()
+        );
         goal.setUser(user);
 
-        return goalRepository.save(goal);
+        return mapToResponse(goalRepository.save(goal));
     }
 
     public List<GoalResponseDto> getAll(User user) {
         return goalRepository.findByUser(user)
                 .stream()
                 .map(this::mapToResponse)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public GoalResponseDto get(Long id, User user) {
@@ -63,7 +66,7 @@ public class GoalService {
         return mapToResponse(goal);
     }
 
-    public Goal update(Long id, GoalDto dto, User user) {
+    public GoalResponseDto update(Long id, GoalDto dto, User user) {
 
         Goal goal = goalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
@@ -77,14 +80,16 @@ public class GoalService {
         }
 
         if (dto.getTargetDate() != null) {
+            if (dto.getTargetDate().isBefore(goal.getStartDate())) {
+                throw new ValidationException("Target date cannot be before start date");
+            }
             goal.setTargetDate(dto.getTargetDate());
         }
 
-        return goalRepository.save(goal);
+        return mapToResponse(goalRepository.save(goal));
     }
 
     public void delete(Long id, User user) {
-
         Goal goal = goalRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Goal not found"));
 
@@ -97,21 +102,28 @@ public class GoalService {
 
     private GoalResponseDto mapToResponse(Goal goal) {
 
-        BigDecimal income =
-                transactionRepository.sumIncomeSince(goal.getUser(), goal.getStartDate());
+        BigDecimal income = transactionRepository
+                .sumIncomeSince(goal.getUser(), goal.getStartDate());
 
-        BigDecimal expense =
-                transactionRepository.sumExpenseSince(goal.getUser(), goal.getStartDate());
+        BigDecimal expense = transactionRepository
+                .sumExpenseSince(goal.getUser(), goal.getStartDate());
 
         BigDecimal progress = income.subtract(expense);
 
-        BigDecimal target = BigDecimal.valueOf(goal.getTargetAmount());
+        if (progress.compareTo(BigDecimal.ZERO) < 0) {
+            progress = BigDecimal.ZERO;
+        }
 
-        BigDecimal percentage = progress
-                .multiply(BigDecimal.valueOf(100))
-                .divide(target, 2, RoundingMode.HALF_UP);
+        BigDecimal targetAmount = BigDecimal.valueOf(goal.getTargetAmount());
 
-        BigDecimal remaining = target.subtract(progress);
+        BigDecimal percentage = BigDecimal.ZERO;
+        if (targetAmount.compareTo(BigDecimal.ZERO) > 0) {
+            percentage = progress
+                    .divide(targetAmount, 2, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        BigDecimal remaining = targetAmount.subtract(progress);
 
         GoalResponseDto dto = new GoalResponseDto();
         dto.setId(goal.getId());
@@ -119,10 +131,11 @@ public class GoalService {
         dto.setTargetAmount(goal.getTargetAmount());
         dto.setTargetDate(goal.getTargetDate());
         dto.setStartDate(goal.getStartDate());
-        dto.setCurrentProgress(progress.setScale(2, RoundingMode.HALF_UP).doubleValue());
+        dto.setCurrentProgress(progress.doubleValue());
         dto.setProgressPercentage(percentage.doubleValue());
-        dto.setRemainingAmount(remaining.setScale(2, RoundingMode.HALF_UP).doubleValue());
+        dto.setRemainingAmount(remaining.doubleValue());
 
         return dto;
     }
+
 }
