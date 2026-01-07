@@ -1,5 +1,5 @@
 package fm.example.personal_finance_manager.service;
-
+import java.math.BigDecimal;
 import fm.example.personal_finance_manager.dto.ReportDto;
 import fm.example.personal_finance_manager.entity.User;
 import fm.example.personal_finance_manager.repository.TransactionRepository;
