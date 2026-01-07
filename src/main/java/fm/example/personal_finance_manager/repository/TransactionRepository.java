@@ -8,9 +8,16 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+
     List<Transaction> findByUserOrderByDateDesc(User user);
-    List<Transaction> findByUserAndDateBetween(User user, LocalDate start, LocalDate end);
-    // Add more filters as needed for category, type
+
+    List<Transaction> findByUserAndDateBetween(
+            User user,
+            LocalDate start,
+            LocalDate end
+    );
+
+    List<Transaction> findByUserAndCategoryId(User user, Long categoryId);
 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.user = :user AND t.category.type = 'INCOME' AND t.date >= :startDate")
     Double sumIncomeSince(User user, LocalDate startDate);

@@ -2,6 +2,8 @@ package fm.example.personal_finance_manager.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -13,8 +15,9 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private double amount;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal amount;
+
 
     @Column(nullable = false)
     private LocalDate date;
